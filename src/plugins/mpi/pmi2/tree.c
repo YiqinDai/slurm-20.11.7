@@ -105,7 +105,7 @@ _handle_kvs_fence(int fd, Buf buf)
 	uint32_t from_nodeid, num_children, temp32, seq;
 	char *from_node = NULL;
 	int rc = SLURM_SUCCESS;
-
+	char* kvs_debug; 
 	safe_unpack32(&from_nodeid, buf);
 	safe_unpackstr_xmalloc(&from_node, &temp32, buf);
 	safe_unpack32(&num_children, buf);
@@ -135,6 +135,14 @@ _handle_kvs_fence(int fd, Buf buf)
 
 	temp_kvs_merge(buf);
 
+	
+	kvs_debug = getenv("SLURM_KVS_FENCE_DEBUG");
+	if(kvs_debug != NULL){
+	    error("mpi/pmi2: in _handle_kvs_fence, from node %u(%s) representing"
+	       " %u offspring, seq=%u, buf_len=%u", from_nodeid, from_node, num_children,
+	       seq, remaining_buf(buf));
+	}
+	
 	if ((children_to_wait == 0) && (tasks_to_wait == 0)) {
 		rc = temp_kvs_send();
 		if (rc != SLURM_SUCCESS) {
@@ -158,6 +166,12 @@ _handle_kvs_fence(int fd, Buf buf)
 				waiting_kvs_resp = 1;
 		}
 	}
+
+	if(kvs_debug != NULL){
+	    error("mpi/pmi2: out _handle_kvs_fence, tasks_to_wait=%d, "
+	       "children_to_wait=%d", tasks_to_wait, children_to_wait);
+	}
+	
 	debug3("mpi/pmi2: out _handle_kvs_fence, tasks_to_wait=%d, "
 	       "children_to_wait=%d", tasks_to_wait, children_to_wait);
 out:

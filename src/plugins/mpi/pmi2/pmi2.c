@@ -593,13 +593,8 @@ handle_pmi2_cmd(int fd, int lrank)
 	safe_read(fd, len_buf, 6);
 	len_buf[6] = '\0';
 	len = atoi(len_buf);
-	buf = xmalloc(len + 1);
-	safe_read(fd, buf, len);
-	buf[len] = '\0';
 
-	debug2("mpi/pmi2: got client request: %s %s", len_buf, buf);
-
-	if (!len) {
+	if (!len || len < 6) {
 		/*
 		 * This is an invalid request.
 		 *
@@ -618,10 +613,15 @@ handle_pmi2_cmd(int fd, int lrank)
 		 * error handling paths, and then tears down the connection
 		 * for good measure.
 		 */
-		_handle_finalize(fd, 0, NULL);
+		//_handle_finalize(fd, 0, NULL);
 		xfree(buf);
 		return SLURM_ERROR;
 	}
+	len -= 6;
+	buf = xmalloc(len + 1);
+	safe_read(fd, buf, len);
+	buf[len] = '\0';
+	debug2("mpi/pmi2: got client request: %s %s", len_buf, buf);
 
 	req = client_req_init(len, buf);
 	if (req == NULL) {

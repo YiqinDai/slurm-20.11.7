@@ -392,15 +392,22 @@ err_exit:
 static int _env_set(char ***env)
 {
 	char *p = NULL;
+	slurm_conf_t *conf = NULL; 
 
 	xassert(_pmixp_job_info.hostname);
 
 	_pmixp_job_info.server_addr_unfmt =
 		xstrdup(slurm_conf.slurmd_spooldir);
 
+	/* 
 	_pmixp_job_info.lib_tmpdir = slurm_conf_expand_slurmd_path(
 				_pmixp_job_info.server_addr_unfmt,
-				_pmixp_job_info.hostname);
+				_pmixp_job_info.hostname);*/
+
+	/* this only works if hostname == nodename */
+	_pmixp_job_info.lib_tmpdir = xstrdup(_pmixp_job_info.server_addr_unfmt);
+	xstrsubstitute(_pmixp_job_info.lib_tmpdir, "%h", _pmixp_job_info.hostname);
+	xstrsubstitute(_pmixp_job_info.lib_tmpdir, "%n", _pmixp_job_info.hostname);
 
 	xstrfmtcat(_pmixp_job_info.server_addr_unfmt,
 		   "/stepd.slurm.pmix.%d.%d",
@@ -421,8 +428,14 @@ static int _env_set(char ***env)
 	if (p){
 		_pmixp_job_info.cli_tmpdir_base = xstrdup(p);
 	} else {
-		_pmixp_job_info.cli_tmpdir_base = slurm_get_tmp_fs(
-					_pmixp_job_info.hostname);
+		/*_pmixp_job_info.cli_tmpdir_base = slurm_get_tmp_fs(
+					_pmixp_job_info.hostname);*/
+		/* this only works if hostname == nodename */
+		conf = slurm_conf_lock();
+		_pmixp_job_info.cli_tmpdir_base = xstrdup(conf->tmp_fs);
+		slurm_conf_unlock();
+		xstrsubstitute(_pmixp_job_info.cli_tmpdir_base, "%h", _pmixp_job_info.hostname);
+		xstrsubstitute(_pmixp_job_info.cli_tmpdir_base, "%n", _pmixp_job_info.hostname);
 	}
 
 	_pmixp_job_info.cli_tmpdir =

@@ -463,11 +463,35 @@ static int _set_mapsinfo(List lresp)
 	if (PMIX_SUCCESS != rc) {
 		return SLURM_ERROR;
 	}
-
+	
 	PMIXP_KVP_CREATE(kvp, PMIX_PROC_MAP, regexp, PMIX_STRING);
 	regexp = NULL;
 	list_append(lresp, kvp);
 
+	input = NULL;
+	for (i = 0; i < count; i++) {
+		/* for each node - run through all tasks and
+		 * record taskid's that reside on this node
+		 */
+		int first = 1;
+		for (j = 0; j < nsptr->ntasks; j++) {
+			if (nsptr->task_map[j] == i) {
+				if (first) {
+					first = 0;
+				} else {
+					xstrfmtcat(input, ",");
+				}
+				xstrfmtcat(input, "%u", j);
+			}
+		}
+		if (i < (count - 1)) {
+			xstrfmtcat(input, ";");
+		}
+	}
+	PMIXP_KVP_CREATE(kvp, "nodemap.pmix", input, PMIX_STRING);
+        list_append(lresp, kvp);
+	xfree(input);
+	
 	PMIXP_KVP_CREATE(kvp, PMIX_ANL_MAP, pmixp_info_task_map(), PMIX_STRING);
 	list_append(lresp, kvp);
 
@@ -673,6 +697,7 @@ extern int pmixp_libpmix_job_set(void)
 		PMIXP_ERROR("Can't build nodemap");
 		return SLURM_ERROR;
 	}
+	*/
 
 	_set_localinfo(lresp);
 
