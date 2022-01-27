@@ -1996,13 +1996,29 @@ static void _slurm_rpc_job_step_kill(slurm_msg_t *msg)
 
 	log_flag(STEPS, "Processing RPC details: REQUEST_CANCEL_JOB_STEP %ps",
 		 &job_step_kill_msg->step_id);
-	_throttle_start(&active_rpc_cnt);
 
-	error_code = kill_job_step(job_step_kill_msg, msg->auth_uid);
-
-	_throttle_fini(&active_rpc_cnt);
-
-	slurm_send_rc_msg(msg, error_code);
+ 	struct job_record* job_ptr;
+	job_ptr = find_job_record(job_step_kill_msg->step_id.job_id);
+	if(!job_ptr){
+		slurm_send_rc_msg(msg,error_code);
+		return;
+	}
+	double interval = difftime(time(NULL), job_ptr->send_kill_msg);
+	if(job_ptr->last_kill_step_id != job_step_kill_msg->step_id.step_id)
+		interval = 65535;
+	bool process_flag = 1;	
+	if(job_step_kill_msg->signal == SIGKILL && job_ptr->send_kill_msg != 0 && interval  < 300)
+		process_flag = 0;
+	if(process_flag) {
+		job_ptr->send_kill_msg = time(NULL);
+		job_ptr->last_kill_step_id = job_step_kill_msg->step_id.step_id;
+		_throttle_start(&active_rpc_cnt);
+		error_code = kill_job_step(job_step_kill_msg, msg->auth_uid);
+		_throttle_fini(&active_rpc_cnt);
+		slurm_send_rc_msg(msg, error_code);
+	} else {
+		slurm_send_rc_msg(msg, error_code);
+	}
 }
 
 /* _slurm_rpc_complete_job_allocation - process RPC to note the
@@ -6459,6 +6475,9 @@ slurmctld_rpc_t slurmctld_rpcs[] =
 	},{
 		.msg_type = REQUEST_UPDATE_CRONTAB,
 		.func = _slurm_rpc_update_crontab,
+	},{
+		.msg_type = REQUEST_MEDIATE_INFO,		
+		.func = _slurm_rpc_dump_mediate_nodes,
 	},{	/* terminate the array. this must be last. */
 		.msg_type = 0,
 		.func = NULL,

@@ -890,6 +890,9 @@ struct job_record {
 	uint32_t wait4switch; /* Maximum time to wait for minimum switches */
 	bool     best_switch; /* true=min number of switches met           */
 	time_t wait4switch_start; /* Time started waiting for switch       */
+
+	time_t send_kill_msg; 
+	uint32_t last_kill_step_id; 
 };
 
 /* Job dependency specification, used in "depend_list" within job_record */
