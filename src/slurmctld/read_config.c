@@ -213,7 +213,7 @@ static void _reorder_nodes_by_name(void)
 	int i, j, min_inx;
 
 	/* Now we need to sort the node records */
-	for (i = 0; i < node_record_count; i++) {
+	/*for (i = 0; i < node_record_count; i++) {
 		min_inx = i;
 		for (j = i + 1; j < node_record_count; j++) {
 			if (strnatcmp(node_record_table_ptr[j].name,
@@ -221,7 +221,7 @@ static void _reorder_nodes_by_name(void)
 				min_inx = j;
 		}
 
-		if (min_inx != i) {	/* swap records */
+		if (min_inx != i) {	
 			node_record_t node_record_tmp;
 
 			j = sizeof(node_record_t);
@@ -232,6 +232,26 @@ static void _reorder_nodes_by_name(void)
 			memcpy(node_ptr, node_ptr2, j);
 			memcpy(node_ptr2, &node_record_tmp, j);
 		}
+	}*/
+	int flag = 0;
+	int size = 0;
+	for (i = node_record_count - 1; i > 0; i--) {
+		flag = 1;
+		for(j = 0; j < i; j++){
+			if (strnatcmp(node_record_table_ptr[j].name, node_record_table_ptr[j + 1].name) > 0){
+				struct node_record node_record_tmp;
+
+				size = sizeof(struct node_record);
+				node_ptr  = node_record_table_ptr + j;
+				node_ptr2 = node_record_table_ptr + j + 1;
+
+				memcpy(&node_record_tmp, node_ptr, size);
+				memcpy(node_ptr, node_ptr2, size);
+				memcpy(node_ptr2, &node_record_tmp, size);
+				flag = 0;
+			}
+		}
+		if(flag == 1) break;
 	}
 
 #if _DEBUG
