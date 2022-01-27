@@ -138,11 +138,12 @@ do {						\
 #define HOSTLIST_CHUNK    16
 
 /* max host range: anything larger will be assumed to be an error */
-#define MAX_RANGE    (64*1024)    /* 64K Hosts */
+//#define MAX_RANGE    (64*1024)    /* 64K Hosts */
+#define MAX_RANGE    (330*1024)    /* 330K Hosts */
 
 /* max number of ranges that will be processed between brackets */
-#define MAX_RANGES   (256*1024)    /* 256K ranks */
-
+//#define MAX_RANGES   (256*1024)    /* 256K ranks */
+#define MAX_RANGES   (330*1024)    /* 330K ranks */
 /* size of internal hostname buffer (+ some slop), hostnames will probably
  * be truncated if longer than MAXHOSTNAMELEN */
 #ifndef MAXHOSTNAMELEN
@@ -3079,7 +3080,8 @@ char *hostlist_ranged_string_malloc(hostlist_t hl)
 
 char *hostlist_ranged_string_xmalloc_dims(hostlist_t hl, int dims, int brackets)
 {
-	int buf_size = 8192;
+	//int buf_size = 8192;
+	int buf_size = 8192 * 2; 
 	char *buf = xmalloc_nz(buf_size);
 	while (hostlist_ranged_string_dims(
 		       hl, buf_size, buf, dims, brackets) < 0) {

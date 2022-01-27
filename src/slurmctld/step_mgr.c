@@ -2824,8 +2824,14 @@ extern slurm_step_layout_t *step_layout_create(step_record_t *step_ptr,
 					       uint16_t plane_size)
 {
 	slurm_step_layout_t *step_layout = NULL;
-	uint16_t cpus_per_node[node_count];
-	uint16_t cpus_per_task_array[node_count];
+
+	//uint16_t cpus_per_node[node_count];
+	//uint16_t cpus_per_task_array[node_count];
+	uint16_t *cpus_per_node;
+	uint16_t *cpus_per_task_array;
+	cpus_per_node = xmalloc(sizeof(uint16_t*) * node_count);
+	cpus_per_task_array = xmalloc(sizeof(uint16_t*) * node_count);
+
 	job_record_t *job_ptr = step_ptr->job_ptr;
 	job_resources_t *job_resrcs_ptr = job_ptr->job_resrcs;
 	slurm_step_layout_req_t step_layout_req;
@@ -2835,8 +2841,14 @@ extern slurm_step_layout_t *step_layout_create(step_record_t *step_ptr,
 	int set_nodes = 0/* , set_tasks = 0 */;
 	int pos = -1, job_node_offset = -1;
 	int first_bit, last_bit;
-	uint32_t cpu_count_reps[node_count];
-	uint32_t cpus_task_reps[node_count];
+	
+	//uint32_t cpu_count_reps[node_count];
+	//uint32_t cpus_task_reps[node_count];
+	uint32_t *cpu_count_reps;
+	uint32_t *cpus_task_reps;
+	cpu_count_reps = xmalloc(sizeof(uint32_t*) * node_count);
+	cpus_task_reps = xmalloc(sizeof(uint32_t*) * node_count);	
+
 	uint32_t cpus_task = 0;
 	uint16_t ntasks_per_core = 0;
 	uint16_t ntasks_per_socket = 0;
@@ -3067,6 +3079,11 @@ extern slurm_step_layout_t *step_layout_create(step_record_t *step_ptr,
 	if ((step_layout = slurm_step_layout_create(&step_layout_req))) {
 		step_layout->start_protocol_ver = step_ptr->start_protocol_ver;
 	}
+
+	xfree(cpus_per_node);
+	xfree(cpu_count_reps);
+	xfree(cpus_task_reps);
+	xfree(cpus_per_task_array);
 
 	return step_layout;
 }

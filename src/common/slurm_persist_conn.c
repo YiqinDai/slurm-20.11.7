@@ -54,8 +54,8 @@
 #include "src/common/xsignal.h"
 #include "slurm_persist_conn.h"
 
-#define MAX_THREAD_COUNT 100
-
+//#define MAX_THREAD_COUNT 100
+#define MAX_THREAD_COUNT 200 
 /*
  *  Maximum message size. Messages larger than this value (in bytes)
  *  will not be received.

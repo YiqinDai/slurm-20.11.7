@@ -409,7 +409,10 @@ static int _init_task_layout(slurm_step_layout_req_t *step_layout_req,
 	uint32_t cluster_flags = slurmdb_setup_cluster_flags();
 	hostlist_t hl;
 
-	uint16_t cpus[step_layout->node_cnt];
+	//uint16_t cpus[step_layout->node_cnt];
+	uint16_t *cpus;
+	int ret;
+
 	uint16_t cpus_per_task[1];
 	uint32_t cpus_task_reps[1];
 
@@ -433,6 +436,7 @@ static int _init_task_layout(slurm_step_layout_req_t *step_layout_req,
 
 	step_layout->plane_size = step_layout_req->plane_size;
 
+	cpus = xmalloc(sizeof(uint16_t) * step_layout->node_cnt);
 	step_layout->tasks = xcalloc(step_layout->node_cnt, sizeof(uint16_t));
 	step_layout->tids = xcalloc(step_layout->node_cnt, sizeof(uint32_t *));
 	hl = hostlist_create(step_layout->node_list);
@@ -500,19 +504,27 @@ static int _init_task_layout(slurm_step_layout_req_t *step_layout_req,
 			cpu_task_cnt = 0;
 		}
 	}
-
 	if ((step_layout->task_dist & SLURM_DIST_NODEMASK)
-	    == SLURM_DIST_NODECYCLIC)
-		return _task_layout_cyclic(step_layout, cpus);
-	else if (((step_layout->task_dist & SLURM_DIST_STATE_BASE)
+	    == SLURM_DIST_NODECYCLIC) {
+		ret = _task_layout_cyclic(step_layout, cpus);
+		xfree(cpus);
+		return ret;
+	} else if (((step_layout->task_dist & SLURM_DIST_STATE_BASE)
 		  == SLURM_DIST_ARBITRARY)
-		 && !(cluster_flags & CLUSTER_FLAG_FE))
-		return _task_layout_hostfile(step_layout, arbitrary_nodes);
-	else if ((step_layout->task_dist & SLURM_DIST_STATE_BASE)
-		 == SLURM_DIST_PLANE)
-		return _task_layout_plane(step_layout, cpus);
-	else
-		return _task_layout_block(step_layout, cpus);
+		 && !(cluster_flags & CLUSTER_FLAG_FE)) {
+		ret = _task_layout_hostfile(step_layout, arbitrary_nodes);
+		xfree(cpus);
+		return ret;
+	} else if ((step_layout->task_dist & SLURM_DIST_STATE_BASE)
+		 == SLURM_DIST_PLANE) {
+		ret =  _task_layout_plane(step_layout, cpus);
+		xfree(cpus);
+		return ret;
+	} else {
+		ret = _task_layout_block(step_layout, cpus);
+		xfree(cpus);
+		return ret;
+	}
 }
 
 /* use specific set run tasks on each host listed in hostfile

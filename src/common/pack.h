@@ -50,14 +50,17 @@
 #include "src/common/xassert.h"
 
 #define BUF_MAGIC 0x42554545
-#define BUF_SIZE (16 * 1024)
+//#define BUF_SIZE (16 * 1024)
+#define BUF_SIZE (256 * 1024) 
+
 #define MAX_BUF_SIZE ((uint32_t) 0xffff0000)	/* avoid going over 32-bits */
 #define REASONABLE_BUF_SIZE ((uint32_t) 0xbfff4000) /* three-quarters of max */
 #define FLOAT_MULT 1000000
 
 /* If we unpack a buffer that contains bad data, we want to avoid a memory
  * allocation error due to array or buffer sizes that are unreasonably large */
-#define MAX_PACK_ARRAY_LEN	(128 * 1024)
+//#define MAX_PACK_ARRAY_LEN	(128 * 1024)
+#define MAX_PACK_ARRAY_LEN	(256 * 1024) 
 #define MAX_PACK_MEM_LEN	(1024 * 1024 * 1024)
 
 typedef struct slurm_buf {

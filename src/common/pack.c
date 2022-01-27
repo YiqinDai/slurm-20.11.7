@@ -65,8 +65,8 @@
 
 #define MAX_ARRAY_LEN_SMALL	10000
 #define MAX_ARRAY_LEN_MEDIUM	1000000
-#define MAX_ARRAY_LEN_LARGE	100000000
-
+//#define MAX_ARRAY_LEN_LARGE	100000000
+#define MAX_ARRAY_LEN_LARGE	(1000000000 * 2) 
 /*
  * Define slurm-specific aliases for use by plugins, see slurm_xlator.h
  * for details.
